@@ -55,6 +55,9 @@ const Utils = {
   formatPhone(phone) {
     if (!phone) return '';
     const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 12) {
+      return `+91 ${cleaned.slice(2, 7)} ${cleaned.slice(7)}`;
+    }
     if (cleaned.length === 10) {
       return `+91 ${cleaned.slice(0, 5)} ${cleaned.slice(5)}`;
     }

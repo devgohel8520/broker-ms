@@ -821,8 +821,11 @@ const Inquiries = {
             <input type="text" class="input" name="name" value="${inquiry?.name || ''}" required>
           </div>
           <div class="input-group">
-            <label class="required">Contact Number</label>
-            <input type="tel" class="input" name="contact" value="${inquiry?.contact || ''}" placeholder="+91 XXXXX XXXXX" required>
+            <label class="required">Mobile Number</label>
+            <div class="phone-input-wrapper">
+              <span class="phone-code">+91</span>
+              <input type="tel" class="input phone-input" name="contact" value="${inquiry?.contact || ''}" placeholder="9876543210" required>
+            </div>
           </div>
         </div>
         <div class="form-row">
@@ -914,9 +917,12 @@ const Inquiries = {
       const locationCheckboxes = document.querySelectorAll('#location-dropdown input[type="checkbox"]:checked');
       const locationIds = Array.from(locationCheckboxes).map(cb => parseInt(cb.value));
       
+      const contactValue = formData.get('contact') || '';
+      const contact = contactValue.replace(/\D/g, '');
+
       const data = {
         name: formData.get('name'),
-        contact: formData.get('contact'),
+        contact: contact,
         propertyType: formData.get('propertyType'),
         budget: parseInt(formData.get('budget')),
         locationIds: locationIds.length > 0 ? locationIds : null,
@@ -1850,8 +1856,11 @@ const Landlords = {
           <input type="text" class="input" name="name" value="${landlord?.name || ''}" required>
         </div>
         <div class="input-group">
-          <label class="required">Contact Number</label>
-          <input type="tel" class="input" name="contact" value="${landlord?.contact || ''}" placeholder="+91 XXXXX XXXXX" required>
+          <label class="required">Mobile Number</label>
+          <div class="phone-input-wrapper">
+            <span class="phone-code">+91</span>
+            <input type="tel" class="input phone-input" name="contact" value="${landlord?.contact || ''}" placeholder="9876543210" required>
+          </div>
         </div>
         <div class="input-group">
           <label>Address</label>
@@ -1879,9 +1888,11 @@ const Landlords = {
     document.getElementById('landlord-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
+      const contactValue = formData.get('contact') || '';
+      const contact = contactValue.replace(/\D/g, '');
       const data = {
         name: formData.get('name'),
-        contact: formData.get('contact'),
+        contact: contact,
         address: formData.get('address') || ''
       };
 

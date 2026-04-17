@@ -160,6 +160,43 @@ textarea.input {
   resize: vertical;
 }
 
+.phone-input-wrapper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.phone-input-wrapper:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.phone-code {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  border-right: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.phone-input {
+  flex: 1;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.phone-input:focus {
+  box-shadow: none !important;
+}
+
 select.input[multiple] {
   background-image: none;
   padding-right: 14px;
