@@ -556,11 +556,62 @@ select.input[multiple] option:checked {
 @media (max-width: 640px) {
   .table-wrapper {
     overflow-x: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+  }
+
+  .table-wrapper::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .table-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
   }
 
   .table {
-    min-width: 500px;
+    min-width: 600px;
+    table-layout: fixed;
+  }
+
+  .table th,
+  .table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+
+  .table th:first-child,
+  .table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: inherit;
+  }
+
+  .table th:first-child {
+    background: var(--bg-secondary);
+    z-index: 3;
+  }
+
+  .table th:last-child,
+  .table td:last-child {
+    position: sticky;
+    right: 0;
+    z-index: 2;
+    background: inherit;
+  }
+
+  .table th:last-child {
+    background: var(--bg-secondary);
+    z-index: 3;
   }
 }
 
