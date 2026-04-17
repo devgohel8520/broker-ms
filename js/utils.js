@@ -179,7 +179,8 @@ const Utils = {
   getInquiryTypeOptions() {
     return [
       { value: 'buy', label: 'Buy' },
-      { value: 'sell', label: 'Sell' }
+      { value: 'sell', label: 'Sell' },
+      { value: 'rent', label: 'Rent' }
     ];
   },
 

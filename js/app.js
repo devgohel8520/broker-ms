@@ -748,7 +748,7 @@ const Inquiries = {
           </div>
         </div>
         <div class="inquiry-card-footer">
-          <span class="inquiry-card-type ${inquiry.inquiry_type}">${inquiry.inquiry_type === 'buy' ? 'Looking to Buy' : 'Looking to Sell'}</span>
+          <span class="inquiry-card-type ${inquiry.inquiry_type}">${inquiry.inquiry_type === 'buy' ? 'Looking to Buy' : inquiry.inquiry_type === 'sell' ? 'Looking to Sell' : 'Looking to Rent'}</span>
           <span style="font-size: 14px; color: var(--accent-primary);">${Utils.formatCurrency(inquiry.budget)}</span>
         </div>
       </div>
@@ -961,7 +961,7 @@ const Inquiries = {
                   </div>
                   <div class="detail-item">
                     <span class="detail-item-label">Inquiry Type</span>
-                    <span class="detail-item-value" style="text-transform: capitalize;">${inquiry.inquiry_type}</span>
+                    <span class="detail-item-value">${inquiry.inquiry_type === 'buy' ? 'Looking to Buy' : inquiry.inquiry_type === 'sell' ? 'Looking to Sell' : 'Looking to Rent'}</span>
                   </div>
                   <div class="detail-item">
                     <span class="detail-item-label">Budget</span>
@@ -1291,7 +1291,6 @@ const Properties = {
 
   renderPropertyCard(property) {
     const linkedInquiries = window.inquiries?.filter(i => i.linked_property_id === property.id) || [];
-    const landlord = property.owner_id ? Store.getLandlordById(property.owner_id) : null;
 
     return `
       <div class="card property-card card-clickable" onclick="App.navigate('properties/${property.id}')">
@@ -1301,10 +1300,13 @@ const Properties = {
         <div class="property-card-title">${Utils.escapeHtml(property.title)}</div>
         <div class="property-card-meta">
           ${UI.getPropertyTypeBadge(property.type)}
-          <span class="property-card-meta-item">
-            ${UI.icons.mapPin}
-            ${Utils.escapeHtml(Utils.truncate(property.location, 20))}
-          </span>
+          <span class="property-card-badge">${property.sell_rent === 'rent' ? 'For Rent' : 'For Sell'}</span>
+          ${property.area ? `<span class="property-card-meta-item">${UI.icons.square} ${property.area} sq.ft</span>` : ''}
+          ${property.door_face ? `<span class="property-card-meta-item">${UI.icons.compass} ${property.door_face}</span>` : ''}
+        </div>
+        <div class="property-card-location">
+          ${UI.icons.mapPin}
+          ${Utils.escapeHtml(Utils.truncate(property.location, 25))}
         </div>
         <div class="property-card-price">${Utils.formatCurrency(property.price)}</div>
         <div class="property-card-footer">
@@ -1320,6 +1322,8 @@ const Properties = {
       Store.getLandlords(),
       Store.getLocations()
     ]);
+
+    const doorFaceOptions = ['North', 'South', 'East', 'West', 'North-East', 'North-West', 'South-East', 'South-West'];
 
     const modal = UI.showModal(`
       <form id="property-form" class="auth-form">
@@ -1338,11 +1342,33 @@ const Properties = {
             </select>
           </div>
           <div class="input-group">
-            <label class="required">Price</label>
-            <input type="number" class="input" name="price" value="${property?.price || ''}" placeholder="e.g., 5000000" required>
+            <label class="required">Status</label>
+            <select class="input" name="sellRent" required>
+              <option value="sell" ${(property?.sell_rent || 'sell') === 'sell' ? 'selected' : ''}>For Sell</option>
+              <option value="rent" ${property?.sell_rent === 'rent' ? 'selected' : ''}>For Rent</option>
+            </select>
           </div>
         </div>
         <div class="form-row">
+          <div class="input-group">
+            <label class="required">Price</label>
+            <input type="number" class="input" name="price" value="${property?.price || ''}" placeholder="e.g., 5000000" required>
+          </div>
+          <div class="input-group">
+            <label>Area (Sq. Ft.)</label>
+            <input type="number" class="input" name="area" value="${property?.area || ''}" placeholder="e.g., 1500">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label>Door Face</label>
+            <select class="input" name="doorFace">
+              <option value="">Select direction</option>
+              ${doorFaceOptions.map(d => `
+                <option value="${d}" ${property?.door_face === d ? 'selected' : ''}>${d}</option>
+              `).join('')}
+            </select>
+          </div>
           <div class="input-group">
             <label>Location</label>
             <select class="input" name="locationId">
@@ -1352,10 +1378,10 @@ const Properties = {
               `).join('')}
             </select>
           </div>
-          <div class="input-group">
-            <label>Address Details</label>
-            <input type="text" class="input" name="propertyLocation" value="${property?.location || ''}" placeholder="Additional address details">
-          </div>
+        </div>
+        <div class="input-group">
+          <label>Address Details</label>
+          <input type="text" class="input" name="propertyLocation" value="${property?.location || ''}" placeholder="Additional address details">
         </div>
         <div class="input-group">
           <label>Owner</label>
@@ -1407,7 +1433,10 @@ const Properties = {
       const data = {
         title: formData.get('title'),
         type: formData.get('type'),
+        sellRent: formData.get('sellRent') || 'sell',
         price: parseInt(formData.get('price')),
+        area: formData.get('area') ? parseInt(formData.get('area')) : null,
+        doorFace: formData.get('doorFace') || null,
         locationId: formData.get('locationId') ? parseInt(formData.get('locationId')) : null,
         propertyLocation: formData.get('propertyLocation') || null,
         ownerId: formData.get('ownerId') ? parseInt(formData.get('ownerId')) : null,
@@ -1512,9 +1541,25 @@ const Properties = {
                     <span class="detail-item-value" style="font-size: 18px; color: var(--accent-primary);">${Utils.formatCurrency(property.price)}</span>
                   </div>
                   <div class="detail-item">
+                    <span class="detail-item-label">Status</span>
+                    <span class="detail-item-value">${property.sell_rent === 'rent' ? 'For Rent' : 'For Sell'}</span>
+                  </div>
+                  <div class="detail-item">
                     <span class="detail-item-label">Type</span>
                     <span class="detail-item-value">${UI.getPropertyTypeBadge(property.type)}</span>
                   </div>
+                  ${property.area ? `
+                  <div class="detail-item">
+                    <span class="detail-item-label">Area</span>
+                    <span class="detail-item-value">${property.area} sq.ft</span>
+                  </div>
+                  ` : ''}
+                  ${property.door_face ? `
+                  <div class="detail-item">
+                    <span class="detail-item-label">Door Face</span>
+                    <span class="detail-item-value">${property.door_face}</span>
+                  </div>
+                  ` : ''}
                   <div class="detail-item" style="grid-column: 1 / -1;">
                     <span class="detail-item-label">Location</span>
                     <span class="detail-item-value">${Utils.escapeHtml(property.location)}</span>
@@ -1562,7 +1607,7 @@ const Properties = {
                   <div class="list-item" onclick="App.navigate('inquiries/${inquiry.id}')">
                     <div class="list-item-content">
                       <div class="list-item-title">${Utils.escapeHtml(inquiry.name)}</div>
-                      <div class="list-item-meta">${UI.getStatusBadge(inquiry.status)} ${inquiry.inquiry_type === 'buy' ? 'Looking to Buy' : 'Looking to Sell'}</div>
+                      <div class="list-item-meta">${UI.getStatusBadge(inquiry.status)} ${inquiry.inquiry_type === 'buy' ? 'Looking to Buy' : inquiry.inquiry_type === 'sell' ? 'Looking to Sell' : 'Looking to Rent'}</div>
                     </div>
                     ${UI.icons.chevronRight}
                   </div>

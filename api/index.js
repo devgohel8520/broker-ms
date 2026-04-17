@@ -175,10 +175,10 @@ module.exports = async function handler(req, res) {
 
     // Properties - Create
     if (url === '/api/properties' && req.method === 'POST') {
-      const { title, type, price, propertyLocation, description, ownerId, images, videoUrl, locationId } = req.body;
+      const { title, type, price, propertyLocation, description, ownerId, images, videoUrl, locationId, sellRent, area, doorFace } = req.body;
       const data = await sql`
-        INSERT INTO properties (user_id, title, type, price, location, description, owner_id, images, video_url, location_id)
-        VALUES (${userId}, ${title}, ${type}, ${price}, ${propertyLocation || null}, ${description || null}, ${ownerId || null}, ${images || null}, ${videoUrl || null}, ${locationId || null})
+        INSERT INTO properties (user_id, title, type, price, location, description, owner_id, images, video_url, location_id, sell_rent, area, door_face)
+        VALUES (${userId}, ${title}, ${type}, ${price}, ${propertyLocation || null}, ${description || null}, ${ownerId || null}, ${images || null}, ${videoUrl || null}, ${locationId || null}, ${sellRent || 'sell'}, ${area || null}, ${doorFace || null})
         RETURNING *
       `;
       return res.status(201).json(data[0]);
@@ -187,11 +187,12 @@ module.exports = async function handler(req, res) {
     // Properties - Update
     if (url.match(/^\/api\/properties\/\d+$/) && req.method === 'PUT') {
       const id = url.split('/')[3];
-      const { title, type, price, propertyLocation, description, ownerId, images, videoUrl, locationId } = req.body;
+      const { title, type, price, propertyLocation, description, ownerId, images, videoUrl, locationId, sellRent, area, doorFace } = req.body;
       const data = await sql`
         UPDATE properties SET title = ${title}, type = ${type}, price = ${price}, location = ${propertyLocation || null},
         description = ${description || null}, owner_id = ${ownerId || null}, images = ${images || null}, 
-        video_url = ${videoUrl || null}, location_id = ${locationId || null}, updated_at = NOW()
+        video_url = ${videoUrl || null}, location_id = ${locationId || null}, sell_rent = ${sellRent || 'sell'}, 
+        area = ${area || null}, door_face = ${doorFace || null}, updated_at = NOW()
         WHERE id = ${id} AND user_id = ${userId} RETURNING *
       `;
       if (data.length === 0) return res.status(404).json({ error: 'Not found' });
