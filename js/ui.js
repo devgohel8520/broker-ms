@@ -222,6 +222,10 @@ const UI = {
           box-shadow: none;
           animation: slideUp 300ms ease-out;
         }
+        .modal-content {
+          overflow-y: auto;
+          height: calc(100vh - 60px - 70px);
+        }
         .modal-header {
           padding: 16px 20px;
           position: sticky;
@@ -231,7 +235,6 @@ const UI = {
         .modal-content {
           padding: 20px;
           flex: 1;
-          overflow-y: auto;
         }
         .modal-content .form-row {
           display: flex;
@@ -264,12 +267,33 @@ const UI = {
           bottom: 0;
           background: var(--bg-secondary);
           border-top: 1px solid var(--border-color);
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
         }
-        .modal-footer .btn {
+        .modal-footer > div,
+        .modal-footer > button,
+        .modal-footer > a {
+          flex: 1;
+          min-width: 100px;
+        }
+        .modal-footer .form-row {
+          display: flex !important;
+          flex-direction: row !important;
+          flex-wrap: wrap;
+          gap: 12px;
+          width: 100%;
+          margin-top: 0 !important;
+          justify-content: flex-end !important;
+        }
+        .modal-footer .form-row .btn {
           flex: 1;
         }
         .modal-footer .btn-danger {
           order: -1;
+        }
+        .modal-footer .btn-primary {
+          flex: 2;
         }
         @keyframes slideUp {
           from {
