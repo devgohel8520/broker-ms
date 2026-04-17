@@ -97,8 +97,8 @@ const App = {
         </div>
         <span class="auth-logo-text">Borker</span>
       </div>
-      <h2 class="auth-title">Welcome back</h2>
-      <p class="auth-subtitle">Sign in to manage your properties</p>
+        <h2 class="auth-title">Welcome back</h2>
+      <p class="auth-subtitle">Sign in to manage your Brokerage Business</p>
       <form class="auth-form" id="login-form">
         <div id="login-error" style="display: none;" class="auth-error"></div>
         <div class="input-group">
@@ -154,8 +154,8 @@ const App = {
         </div>
         <span class="auth-logo-text">Borker</span>
       </div>
-      <h2 class="auth-title">Create account</h2>
-      <p class="auth-subtitle">Start managing your properties today</p>
+        <h2 class="auth-title">Create account</h2>
+      <p class="auth-subtitle">Start managing your Brokerage Business today</p>
       <form class="auth-form" id="signup-form">
         <div id="signup-error" style="display: none;" class="auth-error"></div>
         <div class="input-group">
