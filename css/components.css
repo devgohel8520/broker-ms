@@ -160,6 +160,23 @@ textarea.input {
   resize: vertical;
 }
 
+select.input[multiple] {
+  background-image: none;
+  padding-right: 14px;
+  height: auto;
+  min-height: 90px;
+}
+
+select.input[multiple] option {
+  padding: 8px 12px;
+  border-radius: var(--radius);
+}
+
+select.input[multiple] option:checked {
+  background: var(--accent-primary);
+  color: white;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

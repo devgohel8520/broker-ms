@@ -624,17 +624,31 @@ const Inquiries = {
   currentFilter: 'all',
   searchQuery: '',
   inquiries: [],
+  locations: [],
 
   async render() {
     const loading = `<div class="page-header"><h1 class="page-title">Inquiries</h1></div><div class="empty-state"><div class="empty-state-title">Loading...</div></div>`;
     document.getElementById('app').innerHTML = App.renderMainLayout(loading);
 
     try {
-      this.inquiries = await Store.getInquiries();
+      [this.inquiries, this.locations] = await Promise.all([
+        Store.getInquiries(),
+        Store.getLocations()
+      ]);
       this.renderList();
     } catch (error) {
       UI.showToast('Failed to load inquiries', 'error');
     }
+  },
+
+  getLocationNames(locationIds) {
+    if (!locationIds || !Array.isArray(locationIds) || locationIds.length === 0) {
+      return this.inquiry?.location || 'N/A';
+    }
+    const names = locationIds
+      .map(id => this.locations.find(l => l.id === id)?.name)
+      .filter(Boolean);
+    return names.length > 0 ? names.join(', ') : (this.inquiry?.location || 'N/A');
   },
 
   renderList() {
@@ -728,6 +742,11 @@ const Inquiries = {
   }, 300),
 
   renderInquiryCard(inquiry) {
+    const locationIds = inquiry.location_ids || [];
+    const locationNames = locationIds.length > 0
+      ? locationIds.map(id => Inquiries.locations.find(l => l.id === id)?.name).filter(Boolean).join(', ')
+      : inquiry.location || '';
+    
     return `
       <div class="card inquiry-card card-clickable" onclick="App.navigate('inquiries/${inquiry.id}')">
         <div class="inquiry-card-header">
@@ -744,7 +763,7 @@ const Inquiries = {
           </div>
           <div class="inquiry-card-detail">
             ${UI.icons.mapPin}
-            ${Utils.escapeHtml(Utils.truncate(inquiry.location, 20))}
+            ${Utils.escapeHtml(Utils.truncate(locationNames, 25))}
           </div>
         </div>
         <div class="inquiry-card-footer">
@@ -787,14 +806,14 @@ const Inquiries = {
           </div>
         </div>
         <div class="form-row">
-          <div class="input-group">
-            <label>Location</label>
-            <select class="input" name="locationId">
-              <option value="">Select location (optional)</option>
+          <div class="input-group" style="flex: 1;">
+            <label>Locations (Select multiple)</label>
+            <select class="input" name="locationIds" multiple size="3">
               ${locations.map(l => `
-                <option value="${l.id}" ${inquiry?.location_id == l.id ? 'selected' : ''}>${Utils.escapeHtml(l.name)}${l.city ? ` - ${l.city}` : ''}</option>
+                <option value="${l.id}" ${(inquiry?.location_ids || []).includes(l.id) ? 'selected' : ''}>${Utils.escapeHtml(l.name)}${l.city ? ` - ${l.city}` : ''}</option>
               `).join('')}
             </select>
+            <small class="text-muted" style="font-size: 11px; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple</small>
           </div>
           <div class="input-group">
             <label>Location Details</label>
@@ -845,12 +864,15 @@ const Inquiries = {
     document.getElementById('inquiry-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
+      const locationIdSelect = document.querySelector('select[name="locationIds"]');
+      const locationIds = locationIdSelect ? Array.from(locationIdSelect.selectedOptions).map(opt => parseInt(opt.value)).filter(id => !isNaN(id)) : [];
+      
       const data = {
         name: formData.get('name'),
         contact: formData.get('contact'),
         propertyType: formData.get('propertyType'),
         budget: parseInt(formData.get('budget')),
-        locationId: formData.get('locationId') ? parseInt(formData.get('locationId')) : null,
+        locationIds: locationIds.length > 0 ? locationIds : null,
         inquiryLocation: formData.get('inquiryLocation') || null,
         inquiryType: formData.get('inquiryType'),
         status: formData.get('status') || 'new',
@@ -897,21 +919,30 @@ const Inquiries = {
     document.getElementById('app').innerHTML = App.renderMainLayout(loading);
 
     try {
-      const inquiry = await Store.getInquiryById(id);
+      const [inquiry, reminders, comments, properties, locations] = await Promise.all([
+        Store.getInquiryById(id),
+        Store.getReminders(),
+        Store.getComments(id),
+        Store.getProperties(),
+        Store.getLocations()
+      ]);
+
       if (!inquiry) {
         UI.showToast('Inquiry not found', 'error');
         this.render();
         return;
       }
 
-      const [reminders, comments, properties] = await Promise.all([
-        Store.getReminders(),
-        Store.getComments(id),
-        Store.getProperties()
-      ]);
+      this.inquiry = inquiry;
+      this.locations = locations;
 
       const inquiryReminders = reminders.filter(r => r.inquiry_id == id);
       const linkedProperty = inquiry.linked_property_id ? properties.find(p => p.id === inquiry.linked_property_id) : null;
+
+      const locationIds = inquiry.location_ids || [];
+      const locationNames = locationIds.length > 0
+        ? locationIds.map(locId => locations.find(l => l.id === locId)?.name).filter(Boolean).join(', ')
+        : inquiry.location || '';
 
       const content = `
         <div class="page-header">
@@ -925,7 +956,7 @@ const Inquiries = {
             </div>
           </div>
           <div class="page-actions">
-            <button class="btn btn-secondary" onclick="Inquiries.showAddModal(Store.getInquiryById('${id}'))">
+            <button class="btn btn-secondary" onclick="Inquiries.showAddModal(Inquiries.inquiry)">
               ${UI.icons.edit}
               Edit
             </button>
@@ -979,10 +1010,12 @@ const Inquiries = {
                     <span class="detail-item-label">Property Type</span>
                     <span class="detail-item-value">${Utils.getPropertyTypeLabel(inquiry.property_type)}</span>
                   </div>
-                  <div class="detail-item">
-                    <span class="detail-item-label">Location</span>
-                    <span class="detail-item-value">${Utils.escapeHtml(inquiry.location)}</span>
+                  ${locationNames ? `
+                  <div class="detail-item" style="grid-column: 1 / -1;">
+                    <span class="detail-item-label">Locations</span>
+                    <span class="detail-item-value">${Utils.escapeHtml(locationNames)}</span>
                   </div>
+                  ` : ''}
                 </div>
                 ${inquiry.notes ? `
                   <div style="margin-top: 16px;">

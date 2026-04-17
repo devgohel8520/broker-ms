@@ -207,6 +207,31 @@ const UI = {
         border-top: 1px solid var(--border-color);
         background: var(--bg-secondary);
       }
+      @media (max-width: 640px) {
+        .modal-overlay {
+          padding: 0;
+          align-items: flex-end;
+        }
+        .modal {
+          max-width: 100%;
+          max-height: 90vh;
+          border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
+        .modal-header {
+          padding: 16px 20px;
+        }
+        .modal-content {
+          padding: 20px;
+        }
+        .modal-footer {
+          padding: 16px 20px;
+          flex-wrap: wrap;
+        }
+        .modal-footer .btn {
+          flex: 1;
+          min-width: 100px;
+        }
+      }
     `;
     document.head.appendChild(style);
 

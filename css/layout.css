@@ -453,13 +453,62 @@
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  flex: 1;
 }
 
 .filter-bar-right {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-left: auto;
+}
+
+.status-filter-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.status-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.status-filter-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.status-filter-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.status-filter-tab.active {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.status-filter-tab .count {
+  font-size: 11px;
+  padding: 2px 6px;
+  background: var(--bg-secondary);
+  border-radius: 10px;
 }
 
 .list-view {
@@ -616,6 +665,7 @@
 @media (max-width: 767px) {
   .page {
     padding: 16px;
+    padding-bottom: 100px;
   }
 
   .page-header {
@@ -641,6 +691,7 @@
   .filter-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .filter-bar-left,
@@ -650,7 +701,7 @@
   }
 
   .filter-bar-right {
-    margin-top: 12px;
+    margin-top: 0;
   }
 
   .search-box {
@@ -672,5 +723,91 @@
 
   .detail-header-actions .btn {
     flex: 1;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar-nav {
+    padding: 12px 8px;
+  }
+
+  .nav-item {
+    padding: 12px;
+  }
+
+  .sidebar-logo-text {
+    display: none;
+  }
+
+  .sidebar-user-info {
+    display: none;
+  }
+
+  .inquiry-card,
+  .property-card,
+  .landlord-card,
+  .location-card {
+    padding: 16px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-card-value {
+    font-size: 24px;
+  }
+
+  .detail-section {
+    padding: 16px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .modal-footer .btn:last-child {
+    margin-bottom: 0;
+  }
+
+  select.input[multiple] {
+    min-height: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 12px;
+    padding-bottom: 100px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .stat-card-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .empty-state {
+    padding: 32px 16px;
+  }
+
+  .comment {
+    flex-direction: column;
   }
 }

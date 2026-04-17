@@ -102,13 +102,16 @@ module.exports = async function handler(req, res) {
     if (url.match(/^\/api\/locations\/stats$/) && req.method === 'GET') {
       const locations = await sql`SELECT * FROM locations WHERE user_id = ${userId} ORDER BY name ASC`;
       const properties = await sql`SELECT location_id, COUNT(*) as count FROM properties WHERE user_id = ${userId} AND location_id IS NOT NULL GROUP BY location_id`;
-      const inquiries = await sql`SELECT location_id, COUNT(*) as count FROM inquiries WHERE user_id = ${userId} AND location_id IS NOT NULL GROUP BY location_id`;
+      const allInquiries = await sql`SELECT location_ids FROM inquiries WHERE user_id = ${userId}`;
       
-      const stats = locations.map(loc => ({
-        ...loc,
-        propertyCount: properties.find(p => p.location_id === loc.id)?.count || 0,
-        inquiryCount: inquiries.find(i => i.location_id === loc.id)?.count || 0
-      }));
+      const stats = locations.map(loc => {
+        const propertyCount = properties.filter(p => p.location_id === loc.id).reduce((sum, p) => sum + parseInt(p.count), 0) || 0;
+        const inquiryCount = allInquiries.reduce((count, inquiry) => {
+          const ids = inquiry.location_ids || [];
+          return count + (Array.isArray(ids) && ids.includes(loc.id) ? 1 : 0);
+        }, 0);
+        return { ...loc, propertyCount, inquiryCount };
+      });
       
       return res.json(stats);
     }
@@ -129,10 +132,11 @@ module.exports = async function handler(req, res) {
 
     // Inquiries - Create
     if (url === '/api/inquiries' && req.method === 'POST') {
-      const { name, contact, propertyType, budget, inquiryLocation, inquiryType, status, notes, linkedPropertyId, locationId } = req.body;
+      const { name, contact, propertyType, budget, inquiryLocation, inquiryType, status, notes, linkedPropertyId, locationIds } = req.body;
+      const locationIdsJson = locationIds && Array.isArray(locationIds) ? JSON.stringify(locationIds) : null;
       const data = await sql`
-        INSERT INTO inquiries (user_id, name, contact, property_type, budget, location, inquiry_type, status, notes, linked_property_id, location_id)
-        VALUES (${userId}, ${name}, ${contact}, ${propertyType}, ${budget}, ${inquiryLocation || null}, ${inquiryType}, ${status || 'new'}, ${notes || null}, ${linkedPropertyId || null}, ${locationId || null})
+        INSERT INTO inquiries (user_id, name, contact, property_type, budget, location, inquiry_type, status, notes, linked_property_id, location_ids)
+        VALUES (${userId}, ${name}, ${contact}, ${propertyType}, ${budget}, ${inquiryLocation || null}, ${inquiryType}, ${status || 'new'}, ${notes || null}, ${linkedPropertyId || null}, ${locationIdsJson})
         RETURNING *
       `;
       return res.status(201).json(data[0]);
@@ -141,11 +145,12 @@ module.exports = async function handler(req, res) {
     // Inquiries - Update
     if (url.match(/^\/api\/inquiries\/\d+$/) && req.method === 'PUT') {
       const id = url.split('/')[3];
-      const { name, contact, propertyType, budget, inquiryLocation, inquiryType, status, notes, linkedPropertyId, locationId } = req.body;
+      const { name, contact, propertyType, budget, inquiryLocation, inquiryType, status, notes, linkedPropertyId, locationIds } = req.body;
+      const locationIdsJson = locationIds && Array.isArray(locationIds) ? JSON.stringify(locationIds) : null;
       const data = await sql`
         UPDATE inquiries SET name = ${name}, contact = ${contact}, property_type = ${propertyType}, 
         budget = ${budget}, location = ${inquiryLocation || null}, inquiry_type = ${inquiryType}, status = ${status}, 
-        notes = ${notes || null}, linked_property_id = ${linkedPropertyId || null}, location_id = ${locationId || null}, updated_at = NOW()
+        notes = ${notes || null}, linked_property_id = ${linkedPropertyId || null}, location_ids = ${locationIdsJson}, updated_at = NOW()
         WHERE id = ${id} AND user_id = ${userId} RETURNING *
       `;
       if (data.length === 0) return res.status(404).json({ error: 'Not found' });
