@@ -485,4 +485,174 @@
   .quick-actions {
     grid-template-columns: 1fr;
   }
+
+  .inquiry-card,
+  .property-card,
+  .landlord-card,
+  .location-card {
+    padding: 16px;
+  }
+
+  .inquiry-card-header {
+    flex-direction: column;
+  }
+
+  .inquiry-card-header .badge {
+    align-self: flex-start;
+  }
+
+  .inquiry-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .inquiry-card-footer span:last-child {
+    align-self: flex-end;
+  }
+
+  .reminder-item {
+    padding: 12px;
+  }
+
+  .reminder-info {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .reminder-meta {
+    word-break: break-word;
+  }
+
+  .property-card {
+    padding: 16px;
+  }
+
+  .property-card-title {
+    font-size: 15px;
+  }
+
+  .property-card-price {
+    font-size: 18px;
+  }
+
+  .location-card {
+    padding: 16px;
+  }
+
+  .location-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .location-card-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .detail-section {
+    padding: 16px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .linked-property {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .comments-list {
+    gap: 12px;
+  }
+
+  .comment {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .comment-header {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 12px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-card-value {
+    font-size: 24px;
+  }
+
+  .empty-state {
+    padding: 32px 16px;
+  }
+
+  .empty-state-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .modal {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .inquiry-card-name {
+    font-size: 15px;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+  }
+
+  .input {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  select.input {
+    background-position: right 10px center;
+    padding-right: 36px;
+  }
+
+  .reminder-item {
+    flex-wrap: wrap;
+  }
+
+  .reminder-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+  }
 }

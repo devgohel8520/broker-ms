@@ -671,11 +671,16 @@
   .page-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
 
   .page-actions {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: flex-start;
+  }
+
+  .page-actions .btn {
+    flex: 1;
   }
 
   .grid-2,
@@ -706,6 +711,7 @@
 
   .search-box {
     max-width: none;
+    width: 100%;
   }
 
   .auth-card {
@@ -715,14 +721,22 @@
 
   .detail-header {
     flex-direction: column;
+    gap: 12px;
+  }
+
+  .detail-header-content {
+    width: 100%;
   }
 
   .detail-header-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
 
-  .detail-header-actions .btn {
+  .detail-header-actions .btn,
+  .detail-header-actions select {
     flex: 1;
+    min-width: 120px;
   }
 
   .form-row {
@@ -769,6 +783,10 @@
     gap: 12px;
   }
 
+  .modal-footer {
+    flex-direction: column;
+  }
+
   .modal-footer .btn {
     width: 100%;
     margin-bottom: 8px;
@@ -781,9 +799,51 @@
   select.input[multiple] {
     min-height: 120px;
   }
+
+  .list-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .list-item-content {
+    width: 100%;
+  }
+
+  .list-item-actions {
+    width: 100%;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border-color);
+    padding-top: 8px;
+  }
+
+  .image-gallery {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .comment-form {
+    flex-direction: column;
+  }
+
+  .comment-form .btn {
+    width: 100%;
+  }
+
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline {
+    padding-left: 16px;
+  }
 }
 
 @media (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+
   .page {
     padding: 12px;
     padding-bottom: 100px;
@@ -793,9 +853,23 @@
     font-size: 20px;
   }
 
+  .page-subtitle {
+    font-size: 12px;
+  }
+
   .btn {
     padding: 10px 14px;
     font-size: 13px;
+  }
+
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+  }
+
+  .stat-card {
+    padding: 12px;
   }
 
   .stat-card-icon {
@@ -803,11 +877,66 @@
     height: 36px;
   }
 
+  .stat-card-value {
+    font-size: 22px;
+  }
+
   .empty-state {
     padding: 32px 16px;
   }
 
+  .empty-state-icon {
+    width: 48px;
+    height: 48px;
+  }
+
   .comment {
+    flex-direction: column;
+  }
+
+  .inquiry-card-header {
+    flex-direction: column;
+  }
+
+  .inquiry-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .property-card-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .modal {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 95vh;
+  }
+
+  .modal-content {
+    padding: 16px;
+  }
+
+  .auth-card {
+    padding: 20px 16px;
+  }
+
+  .auth-title {
+    font-size: 20px;
+  }
+
+  .input {
+    padding: 10px 12px;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .location-card-stats {
     flex-direction: column;
   }
 }

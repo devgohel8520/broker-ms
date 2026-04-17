@@ -543,6 +543,59 @@ select.input[multiple] option:checked {
   cursor: pointer;
 }
 
+@media (max-width: 640px) {
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table {
+    min-width: 500px;
+  }
+}
+
+@media (max-width: 767px) {
+  .table-card {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  .table-card .table,
+  .table-card table {
+    min-width: 100%;
+  }
+
+  .table-card .table th {
+    display: none;
+  }
+
+  .table-card .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .table-card .table td::before {
+    content: attr(data-label);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-right: 16px;
+  }
+
+  .table-card .table td:last-child {
+    border-bottom: none;
+  }
+
+  .table-card .table tbody tr {
+    display: block;
+  }
+}
+
 .progress-bar {
   height: 8px;
   background: var(--bg-tertiary);
