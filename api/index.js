@@ -1,16 +1,12 @@
-import { neon, neonConfig } from '@neondatabase/serverless';
+const { neon, neonConfig } = require('@neondatabase/serverless');
 
 neonConfig.fetchOptions = {
   retries: 2,
 };
 
-const sql = neon(process.env.DATABASE_URL);
-
-function getUserId(headers) {
-  return headers.get('x-user-id');
-}
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
+  const sql = neon(process.env.DATABASE_URL);
+  
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-User-Id');
@@ -19,11 +15,11 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const url = req.url || '';
-  const userId = getUserId(req.headers);
+  const url = req.url?.split('?')[0] || '';
+  const userId = req.headers['x-user-id'];
 
   try {
-    // Auth routes
+    // Auth - Signup
     if (url === '/api/auth/signup' && req.method === 'POST') {
       const { name, email, password } = req.body;
       const hashedPassword = Buffer.from(password).toString('base64');
@@ -38,6 +34,7 @@ export default async function handler(req, res) {
       return res.status(201).json({ success: true, user: result[0] });
     }
 
+    // Auth - Login
     if (url === '/api/auth/login' && req.method === 'POST') {
       const { email, password } = req.body;
       const hashedPassword = Buffer.from(password).toString('base64');
@@ -56,12 +53,13 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    // Inquiries
+    // Inquiries - List
     if (url === '/api/inquiries' && req.method === 'GET') {
       const data = await sql`SELECT * FROM inquiries WHERE user_id = ${userId} ORDER BY created_at DESC`;
       return res.json(data);
     }
 
+    // Inquiries - Get One
     if (url.match(/^\/api\/inquiries\/\d+$/) && req.method === 'GET') {
       const id = url.split('/')[3];
       const data = await sql`SELECT * FROM inquiries WHERE id = ${id} AND user_id = ${userId}`;
@@ -69,6 +67,7 @@ export default async function handler(req, res) {
       return res.json(data[0]);
     }
 
+    // Inquiries - Create
     if (url === '/api/inquiries' && req.method === 'POST') {
       const { name, contact, propertyType, budget, location, inquiryType, status, notes, linkedPropertyId } = req.body;
       const data = await sql`
@@ -79,6 +78,7 @@ export default async function handler(req, res) {
       return res.status(201).json(data[0]);
     }
 
+    // Inquiries - Update
     if (url.match(/^\/api\/inquiries\/\d+$/) && req.method === 'PUT') {
       const id = url.split('/')[3];
       const { name, contact, propertyType, budget, location, inquiryType, status, notes, linkedPropertyId } = req.body;
@@ -92,18 +92,20 @@ export default async function handler(req, res) {
       return res.json(data[0]);
     }
 
+    // Inquiries - Delete
     if (url.match(/^\/api\/inquiries\/\d+$/) && req.method === 'DELETE') {
       const id = url.split('/')[3];
       await sql`DELETE FROM inquiries WHERE id = ${id} AND user_id = ${userId}`;
       return res.json({ success: true });
     }
 
-    // Properties
+    // Properties - List
     if (url === '/api/properties' && req.method === 'GET') {
       const data = await sql`SELECT * FROM properties WHERE user_id = ${userId} ORDER BY created_at DESC`;
       return res.json(data);
     }
 
+    // Properties - Get One
     if (url.match(/^\/api\/properties\/\d+$/) && req.method === 'GET') {
       const id = url.split('/')[3];
       const data = await sql`SELECT * FROM properties WHERE id = ${id} AND user_id = ${userId}`;
@@ -111,6 +113,7 @@ export default async function handler(req, res) {
       return res.json(data[0]);
     }
 
+    // Properties - Create
     if (url === '/api/properties' && req.method === 'POST') {
       const { title, type, price, location, description, ownerId, images, videoUrl } = req.body;
       const data = await sql`
@@ -121,6 +124,7 @@ export default async function handler(req, res) {
       return res.status(201).json(data[0]);
     }
 
+    // Properties - Update
     if (url.match(/^\/api\/properties\/\d+$/) && req.method === 'PUT') {
       const id = url.split('/')[3];
       const { title, type, price, location, description, ownerId, images, videoUrl } = req.body;
@@ -134,18 +138,20 @@ export default async function handler(req, res) {
       return res.json(data[0]);
     }
 
+    // Properties - Delete
     if (url.match(/^\/api\/properties\/\d+$/) && req.method === 'DELETE') {
       const id = url.split('/')[3];
       await sql`DELETE FROM properties WHERE id = ${id} AND user_id = ${userId}`;
       return res.json({ success: true });
     }
 
-    // Landlords
+    // Landlords - List
     if (url === '/api/landlords' && req.method === 'GET') {
       const data = await sql`SELECT * FROM landlords WHERE user_id = ${userId} ORDER BY created_at DESC`;
       return res.json(data);
     }
 
+    // Landlords - Get One
     if (url.match(/^\/api\/landlords\/\d+$/) && req.method === 'GET') {
       const id = url.split('/')[3];
       const data = await sql`SELECT * FROM landlords WHERE id = ${id} AND user_id = ${userId}`;
@@ -153,6 +159,7 @@ export default async function handler(req, res) {
       return res.json(data[0]);
     }
 
+    // Landlords - Create
     if (url === '/api/landlords' && req.method === 'POST') {
       const { name, contact, address } = req.body;
       const data = await sql`
@@ -162,6 +169,7 @@ export default async function handler(req, res) {
       return res.status(201).json(data[0]);
     }
 
+    // Landlords - Update
     if (url.match(/^\/api\/landlords\/\d+$/) && req.method === 'PUT') {
       const id = url.split('/')[3];
       const { name, contact, address } = req.body;
@@ -173,18 +181,20 @@ export default async function handler(req, res) {
       return res.json(data[0]);
     }
 
+    // Landlords - Delete
     if (url.match(/^\/api\/landlords\/\d+$/) && req.method === 'DELETE') {
       const id = url.split('/')[3];
       await sql`DELETE FROM landlords WHERE id = ${id} AND user_id = ${userId}`;
       return res.json({ success: true });
     }
 
-    // Reminders
+    // Reminders - List
     if (url === '/api/reminders' && req.method === 'GET') {
       const data = await sql`SELECT * FROM reminders WHERE user_id = ${userId} ORDER BY date ASC, time ASC`;
       return res.json(data);
     }
 
+    // Reminders - Create
     if (url === '/api/reminders' && req.method === 'POST') {
       const { inquiryId, date, time, note } = req.body;
       const data = await sql`
@@ -194,6 +204,7 @@ export default async function handler(req, res) {
       return res.status(201).json(data[0]);
     }
 
+    // Reminders - Update
     if (url.match(/^\/api\/reminders\/\d+$/) && req.method === 'PUT') {
       const id = url.split('/')[3];
       const { date, time, note, completed } = req.body;
@@ -205,13 +216,14 @@ export default async function handler(req, res) {
       return res.json(data[0]);
     }
 
+    // Reminders - Delete
     if (url.match(/^\/api\/reminders\/\d+$/) && req.method === 'DELETE') {
       const id = url.split('/')[3];
       await sql`DELETE FROM reminders WHERE id = ${id} AND user_id = ${userId}`;
       return res.json({ success: true });
     }
 
-    // Comments
+    // Comments - List
     if (url.startsWith('/api/comments') && req.method === 'GET') {
       const inquiryId = req.query?.inquiryId;
       let data;
@@ -223,6 +235,7 @@ export default async function handler(req, res) {
       return res.json(data);
     }
 
+    // Comments - Create
     if (url === '/api/comments' && req.method === 'POST') {
       const { inquiryId, text } = req.body;
       const data = await sql`
@@ -232,15 +245,16 @@ export default async function handler(req, res) {
       return res.status(201).json(data[0]);
     }
 
+    // Comments - Delete
     if (url.match(/^\/api\/comments\/\d+$/) && req.method === 'DELETE') {
       const id = url.split('/')[3];
       await sql`DELETE FROM comments WHERE id = ${id} AND user_id = ${userId}`;
       return res.json({ success: true });
     }
 
-    return res.status(404).json({ error: 'Not found' });
+    return res.status(404).json({ error: 'Not found', url });
   } catch (error) {
     console.error('API Error:', error);
     return res.status(500).json({ error: error.message });
   }
-}
+};
