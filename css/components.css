@@ -177,6 +177,124 @@ select.input[multiple] option:checked {
   color: white;
 }
 
+.checkbox-dropdown {
+  position: relative;
+}
+
+.checkbox-dropdown-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+}
+
+.checkbox-dropdown-arrow {
+  display: flex;
+  transition: transform var(--transition-fast);
+  color: var(--text-muted);
+}
+
+.checkbox-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  display: none;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.checkbox-dropdown.open .checkbox-dropdown-menu {
+  display: block;
+}
+
+.checkbox-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.checkbox-dropdown-item:hover {
+  background: var(--bg-secondary);
+}
+
+.checkbox-dropdown-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+
+.checkbox-dropdown-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.location-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--accent-primary);
+  color: white;
+  border-radius: var(--radius);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.location-tag:hover {
+  background: var(--accent-secondary);
+}
+
+.location-tag-remove {
+  display: flex;
+  opacity: 0.8;
+  width: 12px;
+  height: 12px;
+}
+
+.location-tag-remove svg {
+  width: 12px;
+  height: 12px;
+}
+
+.location-tag-remove:hover {
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  .checkbox-dropdown-menu {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    max-height: 60vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    box-shadow: var(--shadow-xl);
+    transform: translateY(100%);
+    transition: transform var(--transition-normal);
+  }
+
+  .checkbox-dropdown.open .checkbox-dropdown-menu {
+    transform: translateY(0);
+  }
+}
+
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

@@ -807,13 +807,25 @@ const Inquiries = {
         </div>
         <div class="form-row">
           <div class="input-group" style="flex: 1;">
-            <label>Locations (Select multiple)</label>
-            <select class="input" name="locationIds" multiple size="3">
-              ${locations.map(l => `
-                <option value="${l.id}" ${(inquiry?.location_ids || []).includes(l.id) ? 'selected' : ''}>${Utils.escapeHtml(l.name)}${l.city ? ` - ${l.city}` : ''}</option>
-              `).join('')}
-            </select>
-            <small class="text-muted" style="font-size: 11px; margin-top: 4px; display: block;">Hold Ctrl/Cmd to select multiple</small>
+            <label>Locations</label>
+            <div class="checkbox-dropdown" id="location-dropdown">
+              <button type="button" class="checkbox-dropdown-trigger input" onclick="Inquiries.toggleLocationDropdown()">
+                <span class="checkbox-dropdown-label">Select locations...</span>
+                <span class="checkbox-dropdown-arrow">${UI.icons.chevronRight}</span>
+              </button>
+              <div class="checkbox-dropdown-menu">
+                ${locations.map(l => {
+                  const isSelected = (inquiry?.location_ids || []).includes(l.id);
+                  return `
+                    <label class="checkbox-dropdown-item">
+                      <input type="checkbox" value="${l.id}" ${isSelected ? 'checked' : ''} onchange="Inquiries.updateLocationSelection()">
+                      <span>${Utils.escapeHtml(l.name)}${l.city ? ` - ${l.city}` : ''}</span>
+                    </label>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+            <div class="checkbox-dropdown-tags" id="location-tags"></div>
           </div>
           <div class="input-group">
             <label>Location Details</label>
@@ -864,8 +876,8 @@ const Inquiries = {
     document.getElementById('inquiry-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const locationIdSelect = document.querySelector('select[name="locationIds"]');
-      const locationIds = locationIdSelect ? Array.from(locationIdSelect.selectedOptions).map(opt => parseInt(opt.value)).filter(id => !isNaN(id)) : [];
+      const locationCheckboxes = document.querySelectorAll('#location-dropdown input[type="checkbox"]:checked');
+      const locationIds = Array.from(locationCheckboxes).map(cb => parseInt(cb.value));
       
       const data = {
         name: formData.get('name'),
@@ -898,6 +910,55 @@ const Inquiries = {
         UI.showToast('Failed to save inquiry', 'error');
       }
     });
+
+    Inquiries.updateLocationSelection();
+  },
+
+  toggleLocationDropdown() {
+    const dropdown = document.getElementById('location-dropdown');
+    dropdown.classList.toggle('open');
+    const isOpen = dropdown.classList.contains('open');
+    dropdown.querySelector('.checkbox-dropdown-arrow').style.transform = isOpen ? 'rotate(90deg)' : '';
+  },
+
+  updateLocationSelection() {
+    const dropdown = document.getElementById('location-dropdown');
+    const tagsContainer = document.getElementById('location-tags');
+    const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+    const selectedLocations = [];
+    
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        selectedLocations.push({
+          value: cb.value,
+          label: cb.nextElementSibling.textContent
+        });
+      }
+    });
+
+    const label = dropdown.querySelector('.checkbox-dropdown-label');
+    if (selectedLocations.length === 0) {
+      label.textContent = 'Select locations...';
+    } else if (selectedLocations.length === 1) {
+      label.textContent = selectedLocations[0].label;
+    } else {
+      label.textContent = `${selectedLocations.length} locations selected`;
+    }
+
+    tagsContainer.innerHTML = selectedLocations.map(loc => `
+      <span class="location-tag" onclick="Inquiries.removeLocation(${loc.value})">
+        ${Utils.escapeHtml(loc.label)}
+        <span class="location-tag-remove">${UI.icons.x}</span>
+      </span>
+    `).join('');
+  },
+
+  removeLocation(value) {
+    const checkbox = document.querySelector(`#location-dropdown input[value="${value}"]`);
+    if (checkbox) {
+      checkbox.checked = false;
+      Inquiries.updateLocationSelection();
+    }
   },
 
   async confirmDelete(id) {

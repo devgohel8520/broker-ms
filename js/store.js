@@ -79,10 +79,25 @@ const Store = {
     localStorage.setItem(`borker_${key}`, JSON.stringify(data));
   },
 
+  normalizeInquiry(inquiry) {
+    if (!inquiry) return inquiry;
+    if (typeof inquiry.location_ids === 'string') {
+      try {
+        inquiry.location_ids = JSON.parse(inquiry.location_ids);
+      } catch (e) {
+        inquiry.location_ids = null;
+      }
+    }
+    if (!Array.isArray(inquiry.location_ids)) {
+      inquiry.location_ids = null;
+    }
+    return inquiry;
+  },
+
   async getInquiries() {
     const result = await this.request('/inquiries');
-    if (result?.local) return this.lsGet('inquiries');
-    return result;
+    if (result?.local) return this.lsGet('inquiries').map(i => this.normalizeInquiry(i));
+    return result?.map ? result.map(i => this.normalizeInquiry(i)) : result;
   },
 
   async addInquiry(inquiry) {
@@ -129,9 +144,10 @@ const Store = {
     const result = await this.request(`/inquiries/${id}`);
     if (result?.local) {
       const inquiries = this.lsGet('inquiries');
-      return inquiries.find(i => i.id == id) || null;
+      const inquiry = inquiries.find(i => i.id == id) || null;
+      return this.normalizeInquiry(inquiry);
     }
-    return result;
+    return this.normalizeInquiry(result);
   },
 
   async getProperties() {
