@@ -315,8 +315,8 @@ select.input[multiple] option:checked {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 20px;
   transition: all var(--transition-normal);
+  overflow-x: scroll;
 }
 
 .card:hover {
