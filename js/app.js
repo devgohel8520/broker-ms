@@ -112,7 +112,7 @@ const App = {
         <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
       </form>
       <div class="auth-footer">
-        Don't have an account? <a href="#signup">Sign up</a>
+        Don't have an account? <a href="signup.html">Sign up</a>
       </div>
     `;
 
@@ -177,7 +177,7 @@ const App = {
         <button type="submit" class="btn btn-primary btn-lg">Create Account</button>
       </form>
       <div class="auth-footer">
-        Already have an account? <a href="#login">Sign in</a>
+        Already have an account? <a href="login.html">Sign in</a>
       </div>
     `;
 
