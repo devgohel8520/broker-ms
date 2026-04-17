@@ -354,6 +354,183 @@
   line-height: 1.6;
 }
 
+.start-section {
+  padding: 100px 80px;
+  background: var(--bg-primary);
+}
+
+.start-content {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.start-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.start-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.start-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+  width: 180px;
+  transition: all var(--transition-normal);
+}
+
+.start-step:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-4px);
+}
+
+.step-number {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-primary);
+  color: white;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 50%;
+  margin-bottom: 16px;
+}
+
+.step-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.step-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--accent-primary);
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+}
+
+.step-content h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.step-content p {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.step-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.step-arrow svg {
+  width: 24px;
+  height: 24px;
+}
+
+.comparison-section {
+  padding: 100px 80px;
+  background: var(--bg-secondary);
+}
+
+.comparison-content {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.comparison-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+.comparison-card {
+  background: var(--bg-primary);
+  padding: 32px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border-color);
+}
+
+.comparison-card-header {
+  margin-bottom: 24px;
+}
+
+.comparison-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.comparison-badge.old {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+.comparison-badge.new {
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.comparison-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.comparison-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.comparison-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.comparison-list li svg {
+  flex-shrink: 0;
+}
+
+.old-way .comparison-list li svg {
+  color: var(--danger);
+}
+
+.new-way .comparison-list li svg {
+  color: var(--success);
+}
+
 .cta-section {
   padding: 100px 80px;
   background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
@@ -462,6 +639,19 @@
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .start-steps {
+    gap: 12px;
+  }
+
+  .start-step {
+    width: 150px;
+    padding: 20px 16px;
+  }
+
+  .comparison-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
@@ -513,6 +703,49 @@
 
   .features-grid {
     grid-template-columns: 1fr;
+  }
+
+  .start-section {
+    padding: 60px 20px;
+  }
+
+  .start-steps {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .start-step {
+    width: 100%;
+    flex-direction: row;
+    text-align: left;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .step-number {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .step-content {
+    align-items: flex-start;
+    flex: 1;
+  }
+
+  .step-arrow {
+    display: none;
+  }
+
+  .comparison-section {
+    padding: 60px 20px;
+  }
+
+  .comparison-card {
+    padding: 24px;
+  }
+
+  .comparison-grid {
+    gap: 24px;
   }
 
   .cta-section {

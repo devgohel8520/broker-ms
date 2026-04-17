@@ -370,6 +370,24 @@
   color: var(--text-muted);
 }
 
+.mobile-nav-dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 8px 0;
+}
+
+.logout-item {
+  color: var(--danger);
+}
+
+.logout-item:hover {
+  background: var(--danger-bg);
+}
+
+.logout-item svg {
+  color: var(--danger);
+}
+
 .auth-container {
   min-height: 100vh;
   display: flex;

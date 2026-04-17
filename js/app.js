@@ -323,6 +323,11 @@ const App = {
                   ${UI.icons.bell}
                   Reminders
                 </a>
+                <div class="mobile-nav-dropdown-divider"></div>
+                <a href="#" class="mobile-nav-dropdown-item logout-item" onclick="event.preventDefault(); Auth.logout()">
+                  ${UI.icons.logOut}
+                  Logout
+                </a>
               </div>
             </div>
           </div>
