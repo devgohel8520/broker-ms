@@ -91,13 +91,7 @@ const App = {
     }
 
     const content = `
-      <div class="auth-logo">
-        <div class="auth-logo-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
-        </div>
-        <span class="auth-logo-text">Borker</span>
-      </div>
-        <h2 class="auth-title">Welcome back</h2>
+      <h2 class="auth-title">Welcome back</h2>
       <p class="auth-subtitle">Sign in to manage your Brokerage Business</p>
       <form class="auth-form" id="login-form">
         <div id="login-error" style="display: none;" class="auth-error"></div>
@@ -148,13 +142,7 @@ const App = {
     }
 
     const content = `
-      <div class="auth-logo">
-        <div class="auth-logo-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
-        </div>
-        <span class="auth-logo-text">Borker</span>
-      </div>
-        <h2 class="auth-title">Create account</h2>
+      <h2 class="auth-title">Create account</h2>
       <p class="auth-subtitle">Start managing your Brokerage Business today</p>
       <form class="auth-form" id="signup-form">
         <div id="signup-error" style="display: none;" class="auth-error"></div>
