@@ -44,6 +44,10 @@ const App = {
       'locations': () => {
         if (!Auth.requireAuth()) return;
         Locations.render();
+      },
+      'reminders': () => {
+        if (!Auth.requireAuth()) return;
+        RemindersPage.render();
       }
     };
   },
@@ -289,20 +293,36 @@ const App = {
           <div class="mobile-nav-items">
             <a href="#dashboard" class="mobile-nav-item ${this.currentRoute === 'dashboard' ? 'active' : ''}">
               ${UI.icons.home}
-              <span class="mobile-nav-item-label">Home</span>
+              <span class="mobile-nav-item-label">Dashboard</span>
             </a>
             <a href="#inquiries" class="mobile-nav-item ${this.currentRoute.startsWith('inquiries') ? 'active' : ''}">
               ${UI.icons.users}
-              <span class="mobile-nav-item-label">Inquiries</span>
+              <span class="mobile-nav-item-label">Inquiry</span>
             </a>
-            <a href="#properties" class="mobile-nav-item ${this.currentRoute.startsWith('properties') ? 'active' : ''}">
-              ${UI.icons.building}
-              <span class="mobile-nav-item-label">Properties</span>
-            </a>
-            <a href="#locations" class="mobile-nav-item ${this.currentRoute === 'locations' ? 'active' : ''}">
-              ${UI.icons.mapPin}
-              <span class="mobile-nav-item-label">Locations</span>
-            </a>
+            <div class="mobile-nav-more" id="mobile-more-menu">
+              <button type="button" class="mobile-nav-more-btn" onclick="App.toggleMobileMore()">
+                ${UI.icons.moreVertical}
+                <span class="mobile-nav-item-label">More</span>
+              </button>
+              <div class="mobile-nav-dropdown" id="mobile-more-dropdown">
+                <a href="#properties" class="mobile-nav-dropdown-item">
+                  ${UI.icons.building}
+                  Properties
+                </a>
+                <a href="#landlords" class="mobile-nav-dropdown-item">
+                  ${UI.icons.user}
+                  Landlords
+                </a>
+                <a href="#locations" class="mobile-nav-dropdown-item">
+                  ${UI.icons.mapPin}
+                  Locations
+                </a>
+                <a href="#reminders" class="mobile-nav-dropdown-item">
+                  ${UI.icons.bell}
+                  Reminders
+                </a>
+              </div>
+            </div>
           </div>
         </div>
         <main class="page" id="page-content">
@@ -310,6 +330,21 @@ const App = {
         </main>
       </div>
     `;
+  },
+
+  toggleMobileMore() {
+    const dropdown = document.getElementById('mobile-more-dropdown');
+    dropdown.classList.toggle('open');
+    document.addEventListener('click', App.closeMobileMoreOutside);
+  },
+
+  closeMobileMoreOutside(e) {
+    const dropdown = document.getElementById('mobile-more-dropdown');
+    const moreBtn = document.querySelector('.mobile-nav-more-btn');
+    if (!dropdown.contains(e.target) && !moreBtn.contains(e.target)) {
+      dropdown.classList.remove('open');
+      document.removeEventListener('click', App.closeMobileMoreOutside);
+    }
   },
 
   getPendingReminderCount() {
@@ -2046,6 +2081,8 @@ const Reminders = {
           } else {
             Inquiries.render();
           }
+        } else if (window.location.hash.includes('reminders')) {
+          RemindersPage.render();
         }
       } catch (error) {
         UI.showToast('Failed to set reminder', 'error');
@@ -2104,11 +2141,26 @@ const Reminders = {
         });
         UI.closeModal();
         UI.showToast('Reminder updated', 'success');
-        Dashboard.render();
+        Reminders.refreshCurrentPage();
       } catch (error) {
         UI.showToast('Failed to update reminder', 'error');
       }
     });
+  },
+
+  refreshCurrentPage() {
+    if (window.location.hash.includes('dashboard')) {
+      Dashboard.render();
+    } else if (window.location.hash.includes('reminders')) {
+      RemindersPage.render();
+    } else if (window.location.hash.includes('inquiries')) {
+      const hashParts = window.location.hash.split('/');
+      if (hashParts.length > 1) {
+        Inquiries.renderDetail(hashParts[1]);
+      } else {
+        Inquiries.render();
+      }
+    }
   },
 
   async confirmDelete(reminderId) {
@@ -2118,7 +2170,7 @@ const Reminders = {
         await Store.deleteReminder(reminderId);
         UI.closeModal();
         UI.showToast('Reminder deleted', 'success');
-        Dashboard.render();
+        Reminders.refreshCurrentPage();
       } catch (error) {
         UI.showToast('Failed to delete reminder', 'error');
       }
@@ -2132,15 +2184,7 @@ const Reminders = {
     if (reminder) {
       try {
         await Store.updateReminder(reminderId, { completed: !reminder.completed });
-        
-        if (window.location.hash.includes('dashboard')) {
-          Dashboard.render();
-        } else {
-          const hashParts = window.location.hash.split('/');
-          if (hashParts.length > 1) {
-            Inquiries.renderDetail(hashParts[1]);
-          }
-        }
+        Reminders.refreshCurrentPage();
       } catch (error) {
         UI.showToast('Failed to update reminder', 'error');
       }
@@ -2325,6 +2369,131 @@ const Locations = {
         this.render();
       } catch (error) {
         UI.showToast('Failed to delete location', 'error');
+      }
+    }
+  }
+};
+
+const RemindersPage = {
+  reminders: [],
+  inquiries: [],
+
+  async render() {
+    const loading = `<div class="page-header"><h1 class="page-title">Reminders</h1></div><div class="empty-state"><div class="empty-state-title">Loading...</div></div>`;
+    document.getElementById('app').innerHTML = App.renderMainLayout(loading);
+
+    try {
+      [this.reminders, this.inquiries] = await Promise.all([
+        Store.getReminders(),
+        Store.getInquiries()
+      ]);
+      this.renderList();
+    } catch (error) {
+      UI.showToast('Failed to load reminders', 'error');
+    }
+  },
+
+  renderList() {
+    const today = Utils.getToday();
+    const overdueReminders = this.reminders.filter(r => !r.completed && r.date < today);
+    const todayReminders = this.reminders.filter(r => !r.completed && r.date === today);
+    const upcomingReminders = this.reminders.filter(r => !r.completed && r.date > today);
+    const completedReminders = this.reminders.filter(r => r.completed);
+
+    const getInquiry = (id) => this.inquiries.find(i => i.id == id);
+
+    const renderReminderItem = (reminder, type) => {
+      const inquiry = getInquiry(reminder.inquiry_id);
+      return `
+        <div class="reminder-item ${type} ${reminder.completed ? 'completed' : ''}">
+          <div class="reminder-checkbox ${reminder.completed ? 'checked' : ''}" onclick="RemindersPage.toggleComplete('${reminder.id}')">
+            ${reminder.completed ? UI.icons.check : ''}
+          </div>
+          <div class="reminder-info" onclick="App.navigate('inquiries/${reminder.inquiry_id}')">
+            <div class="reminder-title ${reminder.completed ? 'checked' : ''}">${Utils.escapeHtml(inquiry?.name || 'Unknown')}</div>
+            <div class="reminder-meta">${Utils.formatDate(reminder.date)} at ${reminder.time}${reminder.note ? ` - ${Utils.escapeHtml(reminder.note)}` : ''}</div>
+          </div>
+          <div class="reminder-actions">
+            <button class="btn btn-ghost btn-icon btn-sm" onclick="event.stopPropagation(); Reminders.showEditModal('${reminder.id}')">
+              ${UI.icons.edit}
+            </button>
+          </div>
+        </div>
+      `;
+    };
+
+    const allReminders = [
+      ...overdueReminders.map(r => ({ ...r, type: 'overdue' })),
+      ...todayReminders.map(r => ({ ...r, type: 'today' })),
+      ...upcomingReminders.map(r => ({ ...r, type: 'upcoming' })),
+      ...completedReminders.map(r => ({ ...r, type: 'completed' }))
+    ];
+
+    const content = `
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Reminders</h1>
+          <p class="page-subtitle">${this.reminders.filter(r => !r.completed).length} pending reminders</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary" onclick="Reminders.showAddModal()">
+            ${UI.icons.plus}
+            Add Reminder
+          </button>
+        </div>
+      </div>
+
+      <div class="reminders-list">
+        ${allReminders.length === 0 ? `
+          <div class="empty-state">
+            <div class="empty-state-icon">${UI.icons.bell}</div>
+            <div class="empty-state-title">No reminders</div>
+            <div class="empty-state-text">Create reminders to follow up with inquiries</div>
+            <button class="btn btn-primary" onclick="Reminders.showAddModal()">
+              ${UI.icons.plus}
+              Add Reminder
+            </button>
+          </div>
+        ` : `
+          ${overdueReminders.length > 0 ? `
+            <div class="reminders-section">
+              <h3 class="reminders-section-title overdue-title">Overdue (${overdueReminders.length})</h3>
+              ${overdueReminders.map(r => renderReminderItem(r, 'overdue')).join('')}
+            </div>
+          ` : ''}
+          ${todayReminders.length > 0 ? `
+            <div class="reminders-section">
+              <h3 class="reminders-section-title today-title">Today (${todayReminders.length})</h3>
+              ${todayReminders.map(r => renderReminderItem(r, 'today')).join('')}
+            </div>
+          ` : ''}
+          ${upcomingReminders.length > 0 ? `
+            <div class="reminders-section">
+              <h3 class="reminders-section-title upcoming-title">Upcoming (${upcomingReminders.length})</h3>
+              ${upcomingReminders.map(r => renderReminderItem(r, 'upcoming')).join('')}
+            </div>
+          ` : ''}
+          ${completedReminders.length > 0 ? `
+            <div class="reminders-section">
+              <h3 class="reminders-section-title completed-title">Completed (${completedReminders.length})</h3>
+              ${completedReminders.map(r => renderReminderItem(r, 'completed')).join('')}
+            </div>
+          ` : ''}
+        `}
+      </div>
+    `;
+
+    document.getElementById('app').innerHTML = App.renderMainLayout(content);
+  },
+
+  async toggleComplete(reminderId) {
+    const reminder = this.reminders.find(r => r.id == reminderId);
+    if (reminder) {
+      try {
+        await Store.updateReminder(reminderId, { completed: !reminder.completed });
+        this.render();
+      } catch (error) {
+        UI.showToast('Failed to update reminder', 'error');
       }
     }
   }

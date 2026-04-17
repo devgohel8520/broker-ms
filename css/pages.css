@@ -166,6 +166,52 @@
   gap: 4px;
 }
 
+.reminders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.reminders-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reminders-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 4px;
+  margin-bottom: 4px;
+}
+
+.overdue-title {
+  color: var(--danger);
+}
+
+.today-title {
+  color: var(--warning);
+}
+
+.upcoming-title {
+  color: var(--accent-primary);
+}
+
+.completed-title {
+  color: var(--text-muted);
+}
+
+.reminder-item.completed {
+  opacity: 0.6;
+}
+
+.reminder-item.completed .reminder-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
 .inquiry-card {
   display: flex;
   flex-direction: column;
@@ -654,5 +700,23 @@
     margin-top: 8px;
     padding-top: 8px;
     border-top: 1px solid var(--border-color);
+  }
+
+  .reminders-section-title {
+    font-size: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-actions {
+    width: 100%;
+  }
+
+  .page-actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 }
