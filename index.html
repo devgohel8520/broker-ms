@@ -14,36 +14,29 @@
   <link rel="stylesheet" href="css/pages.css">
 </head>
 <body>
-  <div id="app">
-    <div class="auth-container">
-      <div class="auth-card">
-        <div class="auth-logo">
-          <div class="auth-logo-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></svg>
-          </div>
-          <span class="auth-logo-text">Borker</span>
-        </div>
-        <h2 class="auth-title">Loading...</h2>
-        <div style="text-align: center; margin-top: 20px;">
-          <span class="loading-dots"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-  <script>
-    window.addEventListener('DOMContentLoaded', function() {
-      const isLoggedIn = localStorage.getItem('borker_user_id');
-      if (isLoggedIn) {
-        window.location.hash = 'dashboard';
-        window.location.href = 'index.html#dashboard';
-      } else {
-        window.location.href = 'landing.html';
-      }
-    });
-  </script>
+  <div id="app"></div>
   <script src="js/store.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/ui.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      const hash = window.location.hash.slice(1);
+      const isLoggedIn = localStorage.getItem('borker_user_id');
+      
+      if (!hash || hash === 'login' || hash === 'signup') {
+        if (isLoggedIn) {
+          window.location.hash = 'dashboard';
+          return;
+        }
+      }
+      
+      if (isLoggedIn && !hash) {
+        window.location.hash = 'dashboard';
+      } else if (!isLoggedIn && !hash) {
+        window.location.href = 'landing.html';
+      }
+    });
+  </script>
 </body>
 </html>
