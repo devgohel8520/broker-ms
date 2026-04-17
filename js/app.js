@@ -40,6 +40,10 @@ const App = {
       'landlords/:id': (id) => {
         if (!Auth.requireAuth()) return;
         Landlords.renderDetail(id);
+      },
+      'locations': () => {
+        if (!Auth.requireAuth()) return;
+        Locations.render();
       }
     };
   },
@@ -256,6 +260,10 @@ const App = {
             ${UI.icons.user}
             <span>Landlords</span>
           </a>
+          <a href="#locations" class="nav-item ${this.currentRoute === 'locations' ? 'active' : ''}">
+            ${UI.icons.mapPin}
+            <span>Locations</span>
+          </a>
           <div class="sidebar-nav-section">
             <div class="sidebar-nav-section-title">Quick Access</div>
             <a href="#dashboard" class="nav-item" onclick="Dashboard.scrollToReminders()">
@@ -291,9 +299,9 @@ const App = {
               ${UI.icons.building}
               <span class="mobile-nav-item-label">Properties</span>
             </a>
-            <a href="#landlords" class="mobile-nav-item ${this.currentRoute.startsWith('landlords') ? 'active' : ''}">
-              ${UI.icons.user}
-              <span class="mobile-nav-item-label">Landlords</span>
+            <a href="#locations" class="mobile-nav-item ${this.currentRoute === 'locations' ? 'active' : ''}">
+              ${UI.icons.mapPin}
+              <span class="mobile-nav-item-label">Locations</span>
             </a>
           </div>
         </div>
@@ -747,8 +755,10 @@ const Inquiries = {
     `;
   },
 
-  showAddModal(inquiry = null) {
+  async showAddModal(inquiry = null) {
     const isEdit = !!inquiry;
+    const locations = await Store.getLocations();
+
     const modal = UI.showModal(`
       <form id="inquiry-form" class="auth-form">
         <div class="form-row">
@@ -776,9 +786,20 @@ const Inquiries = {
             <input type="number" class="input" name="budget" value="${inquiry?.budget || ''}" placeholder="e.g., 5000000" required>
           </div>
         </div>
-        <div class="input-group">
-          <label class="required">Location Preference</label>
-          <input type="text" class="input" name="location" value="${inquiry?.location || ''}" placeholder="e.g., Whitefield, Bangalore" required>
+        <div class="form-row">
+          <div class="input-group">
+            <label>Location</label>
+            <select class="input" name="locationId">
+              <option value="">Select location (optional)</option>
+              ${locations.map(l => `
+                <option value="${l.id}" ${inquiry?.location_id == l.id ? 'selected' : ''}>${Utils.escapeHtml(l.name)}${l.city ? ` - ${l.city}` : ''}</option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Location Details</label>
+            <input type="text" class="input" name="inquiryLocation" value="${inquiry?.location || ''}" placeholder="Additional location info">
+          </div>
         </div>
         <div class="form-row">
           <div class="input-group">
@@ -829,7 +850,8 @@ const Inquiries = {
         contact: formData.get('contact'),
         propertyType: formData.get('propertyType'),
         budget: parseInt(formData.get('budget')),
-        location: formData.get('location'),
+        locationId: formData.get('locationId') ? parseInt(formData.get('locationId')) : null,
+        inquiryLocation: formData.get('inquiryLocation') || null,
         inquiryType: formData.get('inquiryType'),
         status: formData.get('status') || 'new',
         notes: formData.get('notes') || ''
@@ -1294,7 +1316,10 @@ const Properties = {
 
   async showAddModal(property = null) {
     const isEdit = !!property;
-    const landlords = await Store.getLandlords();
+    const [landlords, locations] = await Promise.all([
+      Store.getLandlords(),
+      Store.getLocations()
+    ]);
 
     const modal = UI.showModal(`
       <form id="property-form" class="auth-form">
@@ -1317,16 +1342,27 @@ const Properties = {
             <input type="number" class="input" name="price" value="${property?.price || ''}" placeholder="e.g., 5000000" required>
           </div>
         </div>
-        <div class="input-group">
-          <label class="required">Location</label>
-          <input type="text" class="input" name="location" value="${property?.location || ''}" placeholder="e.g., Whitefield, Bangalore" required>
+        <div class="form-row">
+          <div class="input-group">
+            <label>Location</label>
+            <select class="input" name="locationId">
+              <option value="">Select location (optional)</option>
+              ${locations.map(l => `
+                <option value="${l.id}" ${property?.location_id == l.id ? 'selected' : ''}>${Utils.escapeHtml(l.name)}${l.city ? ` - ${l.city}` : ''}</option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Address Details</label>
+            <input type="text" class="input" name="propertyLocation" value="${property?.location || ''}" placeholder="Additional address details">
+          </div>
         </div>
         <div class="input-group">
           <label>Owner</label>
           <select class="input" name="ownerId">
             <option value="">Select landlord (optional)</option>
             ${landlords.map(l => `
-              <option value="${l.id}" ${property?.owner_id === l.id ? 'selected' : ''}>${Utils.escapeHtml(l.name)}</option>
+              <option value="${l.id}" ${property?.owner_id == l.id ? 'selected' : ''}>${Utils.escapeHtml(l.name)}</option>
             `).join('')}
           </select>
         </div>
@@ -1372,7 +1408,8 @@ const Properties = {
         title: formData.get('title'),
         type: formData.get('type'),
         price: parseInt(formData.get('price')),
-        location: formData.get('location'),
+        locationId: formData.get('locationId') ? parseInt(formData.get('locationId')) : null,
+        propertyLocation: formData.get('propertyLocation') || null,
         ownerId: formData.get('ownerId') ? parseInt(formData.get('ownerId')) : null,
         description: formData.get('description') || '',
         images,
@@ -1967,6 +2004,188 @@ const Reminders = {
         }
       } catch (error) {
         UI.showToast('Failed to update reminder', 'error');
+      }
+    }
+  }
+};
+
+const Locations = {
+  async render() {
+    const loading = `<div class="page-header"><h1 class="page-title">Locations</h1></div><div class="empty-state"><div class="empty-state-title">Loading...</div></div>`;
+    document.getElementById('app').innerHTML = App.renderMainLayout(loading);
+
+    try {
+      const [locations, properties, inquiries] = await Promise.all([
+        Store.getLocationsWithStats(),
+        Store.getProperties(),
+        Store.getInquiries()
+      ]);
+
+      const content = `
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Locations</h1>
+            <p class="page-subtitle">Manage locations for properties and inquiries</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn btn-primary" onclick="Locations.showAddModal()">
+              ${UI.icons.plus}
+              Add Location
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          ${locations.length ? `
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Location Name</th>
+                  <th>City</th>
+                  <th>State</th>
+                  <th>Properties</th>
+                  <th>Inquiries</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${locations.map(l => `
+                  <tr>
+                    <td>
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--info-bg); color: var(--info); border-radius: var(--radius-md);">
+                          ${UI.icons.mapPin}
+                        </div>
+                        <span style="font-weight: 500;">${Utils.escapeHtml(l.name)}</span>
+                      </div>
+                    </td>
+                    <td>${l.city || '-'}</td>
+                    <td>${l.state || '-'}</td>
+                    <td>
+                      <span class="badge badge-residential">${l.propertyCount || 0}</span>
+                    </td>
+                    <td>
+                      <span class="badge badge-new">${l.inquiryCount || 0}</span>
+                    </td>
+                    <td>
+                      <div style="display: flex; gap: 4px;">
+                        <button class="btn btn-ghost btn-icon btn-sm" onclick="Locations.showAddModal(Locations.getLocationData('${l.id}'))">
+                          ${UI.icons.edit}
+                        </button>
+                        <button class="btn btn-ghost btn-icon btn-sm" onclick="Locations.confirmDelete('${l.id}')">
+                          ${UI.icons.trash}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : `
+            <div class="empty-state">
+              <div class="empty-state-icon">${UI.icons.mapPin}</div>
+              <div class="empty-state-title">No locations yet</div>
+              <div class="empty-state-text">Add locations to organize your properties and inquiries by area</div>
+              <button class="btn btn-primary" onclick="Locations.showAddModal()">
+                ${UI.icons.plus}
+                Add Location
+              </button>
+            </div>
+          `}
+        </div>
+      `;
+
+      document.getElementById('app').innerHTML = App.renderMainLayout(content);
+      window.locationsData = {};
+      locations.forEach(l => { window.locationsData[l.id] = l; });
+    } catch (error) {
+      UI.showToast('Failed to load locations', 'error');
+    }
+  },
+
+  getLocationData(id) {
+    return window.locationsData?.[id] || null;
+  },
+
+  async showAddModal(location = null) {
+    const isEdit = !!location;
+
+    const modal = UI.showModal(`
+      <form id="location-form" class="auth-form">
+        <div class="input-group">
+          <label class="required">Location Name</label>
+          <input type="text" class="input" name="name" value="${location?.name || ''}" placeholder="e.g., Whitefield" required>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label>City</label>
+            <input type="text" class="input" name="city" value="${location?.city || ''}" placeholder="e.g., Bangalore">
+          </div>
+          <div class="input-group">
+            <label>State</label>
+            <input type="text" class="input" name="state" value="${location?.state || ''}" placeholder="e.g., Karnataka">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="input-group">
+            <label>Country</label>
+            <input type="text" class="input" name="country" value="${location?.country || ''}" placeholder="e.g., India">
+          </div>
+          <div class="input-group">
+            <label>Pincode</label>
+            <input type="text" class="input" name="pincode" value="${location?.pincode || ''}" placeholder="e.g., 560066">
+          </div>
+        </div>
+        <div class="form-row" style="margin-top: 16px; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" onclick="UI.closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">
+            ${UI.icons.check}
+            ${isEdit ? 'Save Changes' : 'Add Location'}
+          </button>
+        </div>
+      </form>
+    `, {
+      title: isEdit ? 'Edit Location' : 'Add Location',
+      maxWidth: '480px'
+    });
+
+    document.getElementById('location-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = {
+        name: formData.get('name'),
+        city: formData.get('city') || null,
+        state: formData.get('state') || null,
+        country: formData.get('country') || null,
+        pincode: formData.get('pincode') || null
+      };
+
+      try {
+        if (isEdit) {
+          await Store.updateLocation(location.id, data);
+          UI.showToast('Location updated', 'success');
+        } else {
+          await Store.addLocation(data);
+          UI.showToast('Location added', 'success');
+        }
+
+        UI.closeModal();
+        this.render();
+      } catch (error) {
+        UI.showToast('Failed to save location', 'error');
+      }
+    });
+  },
+
+  async confirmDelete(id) {
+    const confirmed = await UI.confirm('Are you sure you want to delete this location?');
+    if (confirmed) {
+      try {
+        await Store.deleteLocation(id);
+        UI.showToast('Location deleted', 'success');
+        this.render();
+      } catch (error) {
+        UI.showToast('Failed to delete location', 'error');
       }
     }
   }

@@ -53,6 +53,66 @@ module.exports = async function handler(req, res) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
+    // Locations - List
+    if (url === '/api/locations' && req.method === 'GET') {
+      const data = await sql`SELECT * FROM locations WHERE user_id = ${userId} ORDER BY name ASC`;
+      return res.json(data);
+    }
+
+    // Locations - Get One
+    if (url.match(/^\/api\/locations\/\d+$/) && req.method === 'GET') {
+      const id = url.split('/')[3];
+      const data = await sql`SELECT * FROM locations WHERE id = ${id} AND user_id = ${userId}`;
+      if (data.length === 0) return res.status(404).json({ error: 'Not found' });
+      return res.json(data[0]);
+    }
+
+    // Locations - Create
+    if (url === '/api/locations' && req.method === 'POST') {
+      const { name, city, state, country, pincode } = req.body;
+      const data = await sql`
+        INSERT INTO locations (user_id, name, city, state, country, pincode)
+        VALUES (${userId}, ${name}, ${city || null}, ${state || null}, ${country || null}, ${pincode || null})
+        RETURNING *
+      `;
+      return res.status(201).json(data[0]);
+    }
+
+    // Locations - Update
+    if (url.match(/^\/api\/locations\/\d+$/) && req.method === 'PUT') {
+      const id = url.split('/')[3];
+      const { name, city, state, country, pincode } = req.body;
+      const data = await sql`
+        UPDATE locations SET name = ${name}, city = ${city || null}, state = ${state || null}, 
+        country = ${country || null}, pincode = ${pincode || null}
+        WHERE id = ${id} AND user_id = ${userId} RETURNING *
+      `;
+      if (data.length === 0) return res.status(404).json({ error: 'Not found' });
+      return res.json(data[0]);
+    }
+
+    // Locations - Delete
+    if (url.match(/^\/api\/locations\/\d+$/) && req.method === 'DELETE') {
+      const id = url.split('/')[3];
+      await sql`DELETE FROM locations WHERE id = ${id} AND user_id = ${userId}`;
+      return res.json({ success: true });
+    }
+
+    // Locations - Get Stats
+    if (url.match(/^\/api\/locations\/stats$/) && req.method === 'GET') {
+      const locations = await sql`SELECT * FROM locations WHERE user_id = ${userId} ORDER BY name ASC`;
+      const properties = await sql`SELECT location_id, COUNT(*) as count FROM properties WHERE user_id = ${userId} AND location_id IS NOT NULL GROUP BY location_id`;
+      const inquiries = await sql`SELECT location_id, COUNT(*) as count FROM inquiries WHERE user_id = ${userId} AND location_id IS NOT NULL GROUP BY location_id`;
+      
+      const stats = locations.map(loc => ({
+        ...loc,
+        propertyCount: properties.find(p => p.location_id === loc.id)?.count || 0,
+        inquiryCount: inquiries.find(i => i.location_id === loc.id)?.count || 0
+      }));
+      
+      return res.json(stats);
+    }
+
     // Inquiries - List
     if (url === '/api/inquiries' && req.method === 'GET') {
       const data = await sql`SELECT * FROM inquiries WHERE user_id = ${userId} ORDER BY created_at DESC`;
@@ -69,10 +129,10 @@ module.exports = async function handler(req, res) {
 
     // Inquiries - Create
     if (url === '/api/inquiries' && req.method === 'POST') {
-      const { name, contact, propertyType, budget, location, inquiryType, status, notes, linkedPropertyId } = req.body;
+      const { name, contact, propertyType, budget, inquiryLocation, inquiryType, status, notes, linkedPropertyId, locationId } = req.body;
       const data = await sql`
-        INSERT INTO inquiries (user_id, name, contact, property_type, budget, location, inquiry_type, status, notes, linked_property_id)
-        VALUES (${userId}, ${name}, ${contact}, ${propertyType}, ${budget}, ${location}, ${inquiryType}, ${status || 'new'}, ${notes || null}, ${linkedPropertyId || null})
+        INSERT INTO inquiries (user_id, name, contact, property_type, budget, location, inquiry_type, status, notes, linked_property_id, location_id)
+        VALUES (${userId}, ${name}, ${contact}, ${propertyType}, ${budget}, ${inquiryLocation || null}, ${inquiryType}, ${status || 'new'}, ${notes || null}, ${linkedPropertyId || null}, ${locationId || null})
         RETURNING *
       `;
       return res.status(201).json(data[0]);
@@ -81,11 +141,11 @@ module.exports = async function handler(req, res) {
     // Inquiries - Update
     if (url.match(/^\/api\/inquiries\/\d+$/) && req.method === 'PUT') {
       const id = url.split('/')[3];
-      const { name, contact, propertyType, budget, location, inquiryType, status, notes, linkedPropertyId } = req.body;
+      const { name, contact, propertyType, budget, inquiryLocation, inquiryType, status, notes, linkedPropertyId, locationId } = req.body;
       const data = await sql`
         UPDATE inquiries SET name = ${name}, contact = ${contact}, property_type = ${propertyType}, 
-        budget = ${budget}, location = ${location}, inquiry_type = ${inquiryType}, status = ${status}, 
-        notes = ${notes || null}, linked_property_id = ${linkedPropertyId || null}, updated_at = NOW()
+        budget = ${budget}, location = ${inquiryLocation || null}, inquiry_type = ${inquiryType}, status = ${status}, 
+        notes = ${notes || null}, linked_property_id = ${linkedPropertyId || null}, location_id = ${locationId || null}, updated_at = NOW()
         WHERE id = ${id} AND user_id = ${userId} RETURNING *
       `;
       if (data.length === 0) return res.status(404).json({ error: 'Not found' });
@@ -115,10 +175,10 @@ module.exports = async function handler(req, res) {
 
     // Properties - Create
     if (url === '/api/properties' && req.method === 'POST') {
-      const { title, type, price, location, description, ownerId, images, videoUrl } = req.body;
+      const { title, type, price, propertyLocation, description, ownerId, images, videoUrl, locationId } = req.body;
       const data = await sql`
-        INSERT INTO properties (user_id, title, type, price, location, description, owner_id, images, video_url)
-        VALUES (${userId}, ${title}, ${type}, ${price}, ${location}, ${description || null}, ${ownerId || null}, ${images || null}, ${videoUrl || null})
+        INSERT INTO properties (user_id, title, type, price, location, description, owner_id, images, video_url, location_id)
+        VALUES (${userId}, ${title}, ${type}, ${price}, ${propertyLocation || null}, ${description || null}, ${ownerId || null}, ${images || null}, ${videoUrl || null}, ${locationId || null})
         RETURNING *
       `;
       return res.status(201).json(data[0]);
@@ -127,11 +187,11 @@ module.exports = async function handler(req, res) {
     // Properties - Update
     if (url.match(/^\/api\/properties\/\d+$/) && req.method === 'PUT') {
       const id = url.split('/')[3];
-      const { title, type, price, location, description, ownerId, images, videoUrl } = req.body;
+      const { title, type, price, propertyLocation, description, ownerId, images, videoUrl, locationId } = req.body;
       const data = await sql`
-        UPDATE properties SET title = ${title}, type = ${type}, price = ${price}, location = ${location},
+        UPDATE properties SET title = ${title}, type = ${type}, price = ${price}, location = ${propertyLocation || null},
         description = ${description || null}, owner_id = ${ownerId || null}, images = ${images || null}, 
-        video_url = ${videoUrl || null}, updated_at = NOW()
+        video_url = ${videoUrl || null}, location_id = ${locationId || null}, updated_at = NOW()
         WHERE id = ${id} AND user_id = ${userId} RETURNING *
       `;
       if (data.length === 0) return res.status(404).json({ error: 'Not found' });

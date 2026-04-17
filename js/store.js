@@ -244,6 +244,67 @@ const Store = {
     return result;
   },
 
+  async getLocations() {
+    const result = await this.request('/locations');
+    if (result?.local) return this.lsGet('locations');
+    return result;
+  },
+
+  async addLocation(location) {
+    const result = await this.request('/locations', {
+      method: 'POST',
+      body: location
+    });
+    if (result?.local) {
+      const locations = this.lsGet('locations');
+      const newItem = { ...location, id: this.generateId(), created_at: new Date().toISOString() };
+      locations.unshift(newItem);
+      this.lsSet('locations', locations);
+      return newItem;
+    }
+    return result;
+  },
+
+  async updateLocation(id, updates) {
+    const result = await this.request(`/locations/${id}`, {
+      method: 'PUT',
+      body: updates
+    });
+    if (result?.local) {
+      const locations = this.lsGet('locations');
+      const index = locations.findIndex(l => l.id == id);
+      if (index !== -1) {
+        locations[index] = { ...locations[index], ...updates };
+        this.lsSet('locations', locations);
+        return locations[index];
+      }
+    }
+    return result;
+  },
+
+  async deleteLocation(id) {
+    await this.request(`/locations/${id}`, { method: 'DELETE' });
+    if (this.useLocal) {
+      const locations = this.lsGet('locations').filter(l => l.id != id);
+      this.lsSet('locations', locations);
+    }
+  },
+
+  async getLocationById(id) {
+    const result = await this.request(`/locations/${id}`);
+    if (result?.local) {
+      const locations = this.lsGet('locations');
+      return locations.find(l => l.id == id) || null;
+    }
+    return result;
+  },
+
+  async getLocationsWithStats() {
+    const result = await this.request('/locations/stats');
+    if (result?.local) return this.lsGet('locations');
+    return result;
+  },
+
   async getReminders() {
     const result = await this.request('/reminders');
     if (result?.local) return this.lsGet('reminders');
