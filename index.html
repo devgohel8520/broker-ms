@@ -24,10 +24,23 @@
           <span class="auth-logo-text">Borker</span>
         </div>
         <h2 class="auth-title">Loading...</h2>
+        <div style="text-align: center; margin-top: 20px;">
+          <span class="loading-dots"></span>
+        </div>
       </div>
     </div>
   </div>
-
+  <script>
+    window.addEventListener('DOMContentLoaded', function() {
+      const isLoggedIn = localStorage.getItem('borker_user_id');
+      if (isLoggedIn) {
+        window.location.hash = 'dashboard';
+        window.location.href = 'index.html#dashboard';
+      } else {
+        window.location.href = 'landing.html';
+      }
+    });
+  </script>
   <script src="js/store.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/ui.js"></script>

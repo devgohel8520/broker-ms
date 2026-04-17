@@ -283,12 +283,14 @@ const Auth = {
   logout() {
     Store.clearSession();
     this.currentUser = null;
-    App.navigate('login');
+    window.location.hash = '';
+    window.location.href = 'landing.html';
   },
 
   requireAuth() {
     if (!this.isLoggedIn()) {
-      this.logout();
+      window.location.hash = '';
+      window.location.href = 'landing.html';
       return false;
     }
     return true;

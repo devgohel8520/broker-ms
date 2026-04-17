@@ -10,7 +10,7 @@ const App = {
 
   setupRouting() {
     this.routes = {
-      '': () => this.redirectToDashboard(),
+      '': () => this.renderLanding(),
       'login': () => this.renderLogin(),
       'signup': () => this.renderSignup(),
       'dashboard': () => {
@@ -74,12 +74,14 @@ const App = {
     window.location.hash = route;
   },
 
-  redirectToDashboard() {
+  renderLanding() {
     if (Auth.isLoggedIn()) {
       this.navigate('dashboard');
-    } else {
-      this.navigate('login');
+      return;
     }
+    document.getElementById('app').innerHTML = '';
+    document.getElementById('landing')?.classList.add('active');
+    document.body.classList.add('landing-active');
   },
 
   renderLogin() {
