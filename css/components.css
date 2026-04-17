@@ -278,20 +278,30 @@ select.input[multiple] option:checked {
 
 @media (max-width: 640px) {
   .checkbox-dropdown-menu {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: auto;
-    max-height: 60vh;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    box-shadow: var(--shadow-xl);
-    transform: translateY(100%);
-    transition: transform var(--transition-normal);
+    position: relative;
+    max-height: none;
+    border-radius: var(--radius-md);
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+    margin-top: 8px;
   }
 
   .checkbox-dropdown.open .checkbox-dropdown-menu {
-    transform: translateY(0);
+    display: block;
+  }
+
+  .checkbox-dropdown-item {
+    padding: 14px 12px;
+  }
+
+  .checkbox-dropdown-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+  }
+
+  .location-tag {
+    padding: 8px 12px;
+    font-size: 14px;
   }
 }
 

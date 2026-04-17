@@ -210,26 +210,74 @@ const UI = {
       @media (max-width: 640px) {
         .modal-overlay {
           padding: 0;
-          align-items: flex-end;
+          align-items: stretch;
+          background: var(--bg-primary);
         }
         .modal {
           max-width: 100%;
-          max-height: 90vh;
-          border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+          max-height: 100vh;
+          height: 100vh;
+          border-radius: 0;
+          border: none;
+          box-shadow: none;
+          animation: slideUp 300ms ease-out;
         }
         .modal-header {
           padding: 16px 20px;
+          position: sticky;
+          top: 0;
+          z-index: 10;
         }
         .modal-content {
           padding: 20px;
+          flex: 1;
+          overflow-y: auto;
+        }
+        .modal-content .form-row {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .modal-content .input-group {
+          width: 100%;
+        }
+        .modal-content .auth-form {
+          gap: 16px;
+        }
+        .modal-content select.input,
+        .modal-content input.input,
+        .modal-content textarea.input {
+          font-size: 16px;
+          padding: 14px 12px;
+        }
+        .modal-content textarea.input {
+          min-height: 100px;
+        }
+        .modal-content label {
+          font-size: 14px;
+          font-weight: 600;
+          margin-bottom: 6px;
         }
         .modal-footer {
           padding: 16px 20px;
-          flex-wrap: wrap;
+          position: sticky;
+          bottom: 0;
+          background: var(--bg-secondary);
+          border-top: 1px solid var(--border-color);
         }
         .modal-footer .btn {
           flex: 1;
-          min-width: 100px;
+        }
+        .modal-footer .btn-danger {
+          order: -1;
+        }
+        @keyframes slideUp {
+          from {
+            transform: translateY(100%);
+          }
+          to {
+            transform: translateY(0);
+          }
         }
       }
     `;
